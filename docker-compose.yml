@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  office-visits-bot:
+    build: .
+    container_name: office-visits-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    volumes:
+      # Монтируем директорию для сохранения базы данных
+      - ./data:/app/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

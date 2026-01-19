@@ -1,0 +1,13 @@
+# Не коммитить в репозиторий
+.env
+*.db
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+data/
+*.log
+.DS_Store
+.vscode/
+.idea/
