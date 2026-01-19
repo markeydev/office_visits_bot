@@ -46,26 +46,15 @@ docker compose version
 
 ### Установка и запуск
 
-1. **Клонируйте или загрузите проект**
+1. **Клонируйте репозиторий**
 
 ```bash
 cd /opt
-sudo mkdir office-visits-bot
+sudo git clone https://github.com/markeydev/office_visits_bot.git office-visits-bot
 cd office-visits-bot
 ```
 
-2. **Скопируйте все файлы проекта в эту директорию:**
-
-- bot.py
-- database.py
-- calendar_data.py
-- report_generator.py
-- requirements.txt
-- Dockerfile
-- docker-compose.yml
-- .env.example
-
-3. **Создайте файл .env с вашим токеном**
+2. **Создайте файл .env с вашим токеном**
 
 ```bash
 cp .env.example .env
@@ -80,13 +69,13 @@ TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
 
 Сохраните файл (Ctrl+O, Enter, Ctrl+X)
 
-4. **Создайте директорию для базы данных**
+3. **Создайте директорию для базы данных**
 
 ```bash
 mkdir -p data
 ```
 
-5. **Соберите и запустите контейнер**
+4. **Соберите и запустите контейнер**
 
 ```bash
 # Сборка образа
@@ -96,7 +85,7 @@ sudo docker compose build
 sudo docker compose up -d
 ```
 
-6. **Проверьте статус**
+5. **Проверьте статус**
 
 ```bash
 # Проверка запущенных контейнеров
@@ -199,6 +188,49 @@ Docker Compose автоматически настроен на перезапу
 ```bash
 sudo systemctl enable docker
 ```
+
+### 🔁 Автообновление при новом коммите
+
+Вариант: cron-задача, которая регулярно делает `git pull` и перезапускает контейнер.
+
+1. Создайте скрипт обновления:
+
+```bash
+sudo tee /usr/local/bin/office-visits-update.sh > /dev/null <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /opt/office-visits-bot
+
+# Получаем изменения
+git fetch origin
+
+# Проверяем, есть ли новые коммиты
+LOCAL=$(git rev-parse HEAD)
+REMOTE=$(git rev-parse origin/main)
+
+if [ "$LOCAL" != "$REMOTE" ]; then
+    git pull --rebase
+    docker compose build
+    docker compose up -d
+fi
+EOF
+
+sudo chmod +x /usr/local/bin/office-visits-update.sh
+```
+
+2. Добавьте cron-задачу (например, каждые 5 минут):
+
+```bash
+sudo crontab -e
+```
+
+Добавьте строку:
+```
+*/5 * * * * /usr/local/bin/office-visits-update.sh >> /var/log/office-visits-update.log 2>&1
+```
+
+3. Убедитесь, что ветка `main` используется в репозитории. Если у вас другая ветка, замените `origin/main` в скрипте.
 
 ### 🐛 Решение проблем
 
